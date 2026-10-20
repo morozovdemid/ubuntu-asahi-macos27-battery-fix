@@ -6,9 +6,12 @@ set -Eeuo pipefail
 
 readonly SUPPORTED_KERNEL='7.1.0-1001-asahi-arm'
 readonly SUPPORTED_UBUNTU='26.04'
-readonly KERNEL="$(uname -r)"
-readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-readonly REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd -P)"
+KERNEL="$(uname -r)"
+readonly KERNEL
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+readonly SCRIPT_DIR
+REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd -P)"
+readonly REPO_ROOT
 readonly WORK_DIR="$REPO_ROOT/work"
 readonly MODULE_NAME='macsmc-power'
 readonly MODULE_ORIGINAL="/lib/modules/$KERNEL/kernel/drivers/power/supply/macsmc-power.ko.zst"
