@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Shared paths and safeguards for the Ubuntu Asahi macOS 27 SMC battery fix.
-set -Eeuo pipefail
-# Shared globals are used by other scripts that source this file.
+# File-wide: exported-by-sourcing globals are used in different entrypoint scripts.
 # shellcheck disable=SC2034
+set -Eeuo pipefail
 
 readonly SUPPORTED_KERNEL='7.1.0-1001-asahi-arm'
 readonly SUPPORTED_UBUNTU='26.04'
@@ -13,7 +13,6 @@ readonly SCRIPT_DIR
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd -P)"
 readonly REPO_ROOT
 readonly WORK_DIR="$REPO_ROOT/work"
-readonly MODULE_NAME='macsmc-power'
 readonly MODULE_ORIGINAL="/lib/modules/$KERNEL/kernel/drivers/power/supply/macsmc-power.ko.zst"
 readonly MODULE_OVERRIDE="/lib/modules/$KERNEL/updates/macsmc-power.ko"
 readonly MODULE_BUILT="$WORK_DIR/stage/drivers/power/supply/macsmc-power.ko"

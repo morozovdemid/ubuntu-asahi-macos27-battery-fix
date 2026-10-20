@@ -1,87 +1,65 @@
 # Troubleshooting and recovery
 
-## `command not found` after pasting commands
+This project changes the Ubuntu kernel-module search path and the current kernel's initramfs. It does not alter macOS partitions. All paths below apply only to `7.1.0-1001-asahi-arm`.
 
-Copy only commands *inside fenced Bash code blocks*. Terminal prompts such as `user@host:~$` and printed output are not commands. Attempting to run a `.ko` file directly will also produce an error: a kernel module is loaded by `modprobe`, not executed by Bash.
+## Build or patch failure
 
-## The build says `Hunk FAILED`
+The source version and upstream commit are pinned. If a patch hunk fails, **stop**; do not enable fuzz or force the patch onto another kernel revision. Confirm that the running kernel and headers match:
 
-Stop. This repository pins exactly one known source version and upstream patch. A failed hunk may indicate a different source version or already-applied patch. Do **not** use `patch --force`, extra fuzz, or remove sections blindly. Compare the source and upstream patch first.
+```bash
+uname -r
+grep '^CONFIG_MACSMC_POWER=' "/boot/config-$(uname -r)"
+ls -ld "/lib/modules/$(uname -r)/build"
+```
 
-## `curl` not installed
+Warnings about BTF generation or the compiler executable name were nonfatal on the tested machine. A nonzero `make` exit code or a mismatched `vermagic` is not safe to ignore.
 
-No problem. The project uses `wget` instead. Install it with `sudo apt install wget` if needed.
+## `modinfo` points to the override but readings are still wrong
 
-## Build warnings about GCC or BTF
+`modinfo -n macsmc_power` reports module resolution from disk, not which binary was loaded during early boot. Check the dependency metadata inside the active initramfs:
 
-On the tested system, GCC 15 had the same version but a different executable name, and BTF generation was skipped due to missing `vmlinux`. The build nevertheless produced a `.ko`. Warnings alone are not a guarantee of compatibility: inspect build errors, `modinfo -F vermagic`, and the module's live behavior.
+```bash
+sudo lsinitrd -f "usr/lib/modules/$(uname -r)/modules.dep" \
+  "/boot/initrd.img-$(uname -r)" | grep macsmc-power
+```
 
-## `Permission denied` when running `lsinitrd`
+On the tested setup the line begins `updates/macsmc-power.ko:`. The image may include both original and override `.ko` files; dependency resolution is the relevant check.
 
-The `/boot/initrd.img-*` files may be root-readable only. Use `sudo lsinitrd ...`; never change the permissions of your entire `/boot` directory.
-
-## `modinfo -n` returns `updates/` but values still jump
-
-`modinfo -n` describes the *module that would be selected from disk*, not necessarily which binary was already loaded. The original copy may remain active until a successful reload/reboot. Check that the correct initramfs was installed and that the running kernel matches. Examine sanitized logs with:
+For runtime clues:
 
 ```bash
 journalctl -k -b | grep -Ei 'macsmc|battery|power_supply'
 ```
 
-Don't assume all battery problems share this root cause. SMC key reads, charging logic, firmware details and physical battery health can also matter.
+Check charging hardware separately if the status says `Discharging` while a power supply is attached. Not every battery issue is caused by this SMC decoding bug.
 
-## The image has both `.ko.zst` and `.ko`
+## Roll back from a working Ubuntu installation
 
-This was observed in the tested Dracut build. The critical check is its dependency database:
-
-```bash
-sudo lsinitrd -f "usr/lib/modules/$(uname -r)/modules.dep" "/boot/initrd.img-$(uname -r)" | grep macsmc-power
-```
-
-It should select `updates/macsmc-power.ko: ...` for this specific kernel. Merely listing a patched file inside an initramfs does **not** prove the boot process will load it.
-
-## A newer kernel was installed
-
-**Stop using the old `.ko`.** This module was built for the exact kernel `7.1.0-1001-asahi-arm`. On a new kernel, first verify whether the upstream fix is already included. If not, the source, patch applicability, symbol ABI, module and initramfs must all be checked anew. This repository intentionally rejects other kernels.
-
-## Roll back when Ubuntu boots
-
-From the downloaded repo directory:
+From the repository directory:
 
 ```bash
 ./scripts/rollback.sh
 sudo reboot
 ```
 
-This restores the original Ubuntu initramfs and removes the custom module override from this kernel. It does not remove kernel packages or the macOS installation.
+The rollback script requires the saved initramfs, restores it, removes the specific override module, and runs `depmod`. It does not remove Linux packages or touch macOS. Restoring the original driver may also restore the original reporting bug.
 
-## Restore manually if a script cannot run
-
-**These commands are for the specific tested kernel only**, from a functioning Ubuntu boot or a Linux recovery session where the installed Linux root and `/boot` are properly mounted. Do not run against a different root filesystem.
+For manual recovery on the **installed Ubuntu root**, with `/boot` correctly mounted:
 
 ```bash
-sudo cp -a /boot/initrd.img-7.1.0-1001-asahi-arm.original-backup /boot/initrd.img-7.1.0-1001-asahi-arm
-sudo rm -- /lib/modules/7.1.0-1001-asahi-arm/updates/macsmc-power.ko
+sudo cp -a /boot/initrd.img-7.1.0-1001-asahi-arm.original-backup \
+  /boot/initrd.img-7.1.0-1001-asahi-arm
+sudo rm -f /lib/modules/7.1.0-1001-asahi-arm/updates/macsmc-power.ko
 sudo depmod -a 7.1.0-1001-asahi-arm
 sync
 ```
 
-Afterward, reboot. If the machine cannot boot at all, consider the previous kernel in GRUB (if installed) or a suitable rescue environment; the correct mount points depend on the rescue environment and are **not covered by a universal command**. Preserve data backups.
+If Ubuntu cannot boot, use an older kernel entry if available, or a suitable Linux recovery environment. Recovery-environment device names and mount points vary; the commands above **must not** be run against an unrelated root filesystem. Maintain an independent data backup.
 
-## The battery still says `Discharging` with the charger attached
+## New kernel release
 
-Check the physical USB-C charging connection, adapter, battery icon and any other power supplies in `/sys/class/power_supply/`. This repository only corrects a particular battery decoding bug; it does not guarantee charging functionality.
+An override built for `7.1.0-1001-asahi-arm` will not follow a kernel upgrade. First determine whether the updated Ubuntu kernel already contains the upstream fix. If it does not, repeat compatibility analysis against the new source and header versions; do not reuse the old module binary.
 
-## Relevant locations
+## Issue reports
 
-| Path | Purpose |
-|:--|:--|
-| `/lib/modules/7.1.0-1001-asahi-arm/updates/macsmc-power.ko` | Custom module |
-| `/lib/modules/7.1.0-1001-asahi-arm/kernel/drivers/power/supply/macsmc-power.ko.zst` | Original packaged module (left untouched) |
-| `/boot/initrd.img-7.1.0-1001-asahi-arm` | Active boot image |
-| `/boot/initrd.img-7.1.0-1001-asahi-arm.original-backup` | Original boot-image backup |
-| `work/` | Downloaded source, patch, built module and extra module backup |
-
-## Reporting a bug
-
-Open a GitHub issue using the template. Supply OS version, `uname -r`, relevant command errors, and **sanitized** readings. Do not publish personal usernames, serial numbers, full disk UUIDs, addresses, or secrets.
+Use the [bug-report template](../.github/ISSUE_TEMPLATE/bug_report.md) and include the exact failing command, Ubuntu version, kernel version, and sanitized driver diagnostics. Remove hardware serials, full filesystem UUIDs and private information before posting logs.

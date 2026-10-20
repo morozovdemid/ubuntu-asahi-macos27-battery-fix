@@ -1,4 +1,5 @@
 name: Shell scripts
+
 on:
   push:
   pull_request:
@@ -7,13 +8,15 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check Bash syntax
         run: |
-          for script in scripts/*.sh; do bash -n "$script"; done
+          for script in scripts/*.sh; do
+            bash -n "$script"
+          done
       - name: Install ShellCheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
-      - name: ShellCheck
+      - name: ShellCheck (entry points, with sourced definitions)
         run: |
-          shellcheck -s bash scripts/build.sh scripts/install.sh scripts/rollback.sh scripts/status.sh
+          shellcheck -x -s bash scripts/build.sh scripts/install.sh scripts/rollback.sh scripts/status.sh
           shellcheck -s bash -e SC2034 scripts/common.sh

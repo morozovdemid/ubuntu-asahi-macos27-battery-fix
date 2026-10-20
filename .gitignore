@@ -1,0 +1,13 @@
+# Kernel source archives, downloaded upstream patches, build outputs, backups.
+/work/
+*.ko
+*.o
+*.cmd
+*.mod
+*.mod.c
+*.mod.o
+*.symvers
+*.order
+*.tar.gz
+*.patch
+.DS_Store

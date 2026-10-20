@@ -1,29 +1,26 @@
 ---
 name: Bug report
-about: Report a failure reproducing the macOS 27 battery module repair
+about: Report a build, install, or battery-reporting problem
 labels: bug
 ---
 
-**System (do not paste serial numbers, private UUIDs, or full logs)**
-- Mac model / chip:
-- Ubuntu Asahi release:
-- `uname -r`:
-- macOS firmware version:
+## Environment
 
-**Command and error (sanitized)**
+- Mac model / SoC:
+- Ubuntu Asahi version:
+- Kernel (`uname -r`):
+- Firmware version:
 
-```
+## Steps to reproduce
 
-```
+Describe the commands run and the point of failure.
 
-**Expected behavior**
+## Expected / observed result
 
-**Actual behavior**
+If relevant, include sanitized `macsmc-battery/uevent` readings and the exact error output.
 
-**Battery readings (if relevant; remove identifiers)**
+## Validation performed
 
-```
+State whether this was a static script check, a build, a module reload, a reboot, or an unplugged discharge observation.
 
-```
-
-**Did you run a 15–20-minute unplugged test?**
+**Privacy:** Remove serial numbers, disk UUIDs, tokens and personal identifiers before posting logs.

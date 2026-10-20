@@ -1,11 +1,13 @@
 # Contributing
 
-PRs and issue reports are welcome. Keep changes focused and testable.
+Issues and focused pull requests are welcome. This repository is intentionally limited to a tested Ubuntu Asahi kernel/firmware combination; new support targets require evidence from the relevant hardware and source tree.
 
-1. Run `bash -n scripts/*.sh` and `shellcheck -s bash scripts/*.sh` locally.
-2. Do not commit binaries, downloaded kernel source, patches, logs containing personal information, UUIDs, serial numbers, or private home paths.
-3. Keep the upstream commit SHA and Ubuntu source version explicit; do not silently expand supported kernels.
-4. Any change to boot or kernel-module installation must preserve an independently restorable original and must not automatically reboot.
-5. Explain new distributions and kernel versions only after they have been tested with actual module loading and battery readings.
+Before submitting a change:
 
-This repository is an independently documented workaround, not an official Ubuntu Asahi kernel release.
+1. Run `bash -n scripts/*.sh` and `shellcheck -x -s bash scripts/build.sh scripts/install.sh scripts/rollback.sh scripts/status.sh` (if ShellCheck is installed).
+2. Explain why a change is needed and what environment was tested. Separate static lint results from actual boot, install and rollback tests.
+3. Keep package/source versions and upstream patch provenance explicit. Never silently remove safeguards or enable fuzzy patching.
+4. Preserve backups and recovery behavior when touching `/boot` or `/lib/modules`.
+5. Do not commit compiled modules, kernel source archives, logs containing personal details, serial numbers, disk UUIDs or tokens.
+
+Upstream SMC driver changes belong in the Linux kernel; this repository concerns applying and validating a specific upstream fix for one Ubuntu Asahi package build.

@@ -10,6 +10,8 @@ check_built_module
 for cmd in sudo depmod dracut lsinitrd install cp mv; do need "$cmd"; done
 [[ -f "$MODULE_ORIGINAL" ]] || fail "Original packaged module missing: $MODULE_ORIGINAL"
 [[ -f "$INITRD" ]] || fail "Boot image missing: $INITRD"
+# Never overwrite an existing override: it may belong to a previous/manual installation.
+[[ ! -e "$MODULE_OVERRIDE" ]] || fail "Override already exists: $MODULE_OVERRIDE. Review or roll back the current installation first."
 
 log 'WARNING: modifies /lib/modules and replaces the current kernel initramfs.'
 log 'Keep the charger connected. The kernel version is pinned; updates require a new build.'

@@ -1,25 +1,20 @@
-# Credits and attribution
+# Credits
 
-## Original upstream Linux kernel fix
+## Upstream kernel fix
 
-**Author:** Sasha Finkelstein <k@chaosmail.tech>  
-**Title:** `power: supply: macsmc: Support macOS 27 SMC firmware`  
-**Commit:** [`f7b253a6e217f71d754d70c525e9b4c1dcbd4414`](https://github.com/torvalds/linux/commit/f7b253a6e217f71d754d70c525e9b4c1dcbd4414)  
-**Committer:** Sebastian Reichel <sebastian.reichel@collabora.com>  
-**Reviewed by:** Sven Peter, Joshua Peisach, Janne Grunau.
+The macOS 27 Apple SMC compatibility patch was authored by **Sasha Finkelstein**.
 
-The upstream patch addresses the `BCF0` battery critical-state key size and the `B0RM` charge-reading byte order on macOS 27 firmware. The Linux commit and its associated development history are the primary sources of this fix.
+- Commit: [`f7b253a6e217f71d754d70c525e9b4c1dcbd4414`](https://github.com/torvalds/linux/commit/f7b253a6e217f71d754d70c525e9b4c1dcbd4414)
+- Subject: `power: supply: macsmc: Support macOS 27 SMC firmware`
+- Committer: **Sebastian Reichel**
+- Reviewed by: Sven Peter, Joshua Peisach and Janne Grunau
 
-**This repository does not claim ownership or authorship of the upstream Linux kernel patch.** It downloads that patch from the upstream Linux repository and applies it to a matching Ubuntu Asahi kernel source tree using local scripts. Original Linux kernel code and upstream modifications remain under their applicable upstream license terms.
+The original patch changes handling of the `B0RM` remaining-charge reading and the `BCF0` battery-critical flag after changes in macOS 27 SMC firmware. The upstream kernel commit and its review history are the authoritative sources for the kernel fix.
 
-## Related projects
+## Related work
 
-- [Linux kernel](https://github.com/torvalds/linux): upstream kernel driver and patch.
-- [Ubuntu Asahi](https://github.com/UbuntuAsahi): downstream Ubuntu Asahi distribution and Linux kernel packaging.
-- [Asahi Linux](https://asahilinux.org/): broader Apple Silicon Linux enablement project.
+- [Linux kernel](https://github.com/torvalds/linux): upstream implementation and patch.
+- [Ubuntu Asahi](https://github.com/UbuntuAsahi): downstream kernel packaging for Ubuntu on Apple Silicon.
+- [Asahi Linux](https://asahilinux.org/): Linux enablement on Apple Silicon.
 
-## This repository
-
-The Bash scripts, explanatory documentation, and test reproduction are a separate community packaging and troubleshooting effort. No endorsement by the original patch author, Ubuntu Asahi, Asahi Linux, or Linux kernel maintainers is implied.
-
-For the one-machine validation results and limitations, see [README.md](README.md).
+This repository documents the Ubuntu-specific backport procedure and supplies build, installation, verification and recovery scripts. It is not affiliated with or endorsed by the upstream author or the projects above. Linux kernel code and patches remain under their applicable original licenses; this repository does not redistribute compiled kernel binaries.
